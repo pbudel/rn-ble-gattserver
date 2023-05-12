@@ -944,6 +944,60 @@ The peripheral received a request to start or stop providing notifications for a
 - `domain` - `String` - [iOS only] error domain
 - `code` - `Number` - [iOS only] error code
 
+### startTransferService(serviceUUID, characteristicUUID)
+
+Enable a service to receive message from BLE pheripherals, a new message trigger a BleManagerDidReceivedData event.
+Returns a `Promise` object.
+
+**Arguments**
+
+- `serviceUUID` - `String` - the UUID of the service.
+- `characteristicUUID` - `String` - the UUID of the characteristic.
+
+**Examples**
+
+```js
+BleManager.startTransferService(
+  'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
+  'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
+)
+  .then(() => {
+    // Success code
+    console.log('Transfer service enabled ');
+  })
+  .catch(error => {
+    // Failure code
+    console.log(error);
+  });
+```
+
+### stopTransferService(serviceUUID, characteristicUUID)
+
+Disable a service to receive message from BLE pheripherals.
+Returns a `Promise` object.
+
+**Arguments**
+
+- `serviceUUID` - `String` - the UUID of the service.
+- `characteristicUUID` - `String` - the UUID of the characteristic.
+
+**Examples**
+
+```js
+BleManager.stopTransferService(
+  'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
+  'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'
+)
+  .then(() => {
+    // Success code
+    console.log('Transfer service disable ');
+  })
+  .catch(error => {
+    // Failure code
+    console.log(error);
+  });
+```
+
 ## Library development
 
 - the library is written in typescript and needs to be built before being used for publication or local development, using the provided npm scripts in `package.json`.
