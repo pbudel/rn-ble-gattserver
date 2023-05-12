@@ -177,7 +177,7 @@ class BleManager extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void scan(ReadableArray serviceUUIDs, final int scanSeconds, boolean allowDuplicates, ReadableMap options,
-                     Callback callback) {
+            Callback callback) {
         Log.d(LOG_TAG, "scan");
         if (getBluetoothAdapter() == null) {
             Log.d(LOG_TAG, "No bluetooth support");
@@ -190,7 +190,7 @@ class BleManager extends ReactContextBaseJavaModule {
 
         synchronized (peripherals) {
             for (Iterator<Map.Entry<String, Peripheral>> iterator = peripherals.entrySet().iterator(); iterator
-                    .hasNext(); ) {
+                    .hasNext();) {
                 Map.Entry<String, Peripheral> entry = iterator.next();
                 if (!(entry.getValue().isConnected() || entry.getValue().isConnecting())) {
                     iterator.remove();
@@ -243,7 +243,8 @@ class BleManager extends ReactContextBaseJavaModule {
             return;
         } else if (peripheral.getDevice().createBond()) {
             Log.d(LOG_TAG, "Request bond successful for: " + peripheralUUID);
-            bondRequest = new BondRequest(peripheralUUID, peripheralPin, callback); // request bond success, waiting for boradcast
+            bondRequest = new BondRequest(peripheralUUID, peripheralPin, callback); // request bond success, waiting for
+                                                                                    // boradcast
             return;
         }
 
@@ -297,7 +298,7 @@ class BleManager extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startNotificationUseBuffer(String deviceUUID, String serviceUUID, String characteristicUUID,
-                                           Integer buffer, Callback callback) {
+            Integer buffer, Callback callback) {
         Log.d(LOG_TAG, "startNotification");
         if (serviceUUID == null || characteristicUUID == null) {
             callback.invoke("ServiceUUID and characteristicUUID required.");
@@ -343,7 +344,7 @@ class BleManager extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void write(String deviceUUID, String serviceUUID, String characteristicUUID, ReadableArray message,
-                      Integer maxByteSize, Callback callback) {
+            Integer maxByteSize, Callback callback) {
         Log.d(LOG_TAG, "Write to: " + deviceUUID);
         if (serviceUUID == null || characteristicUUID == null) {
             callback.invoke("ServiceUUID and characteristicUUID required.");
@@ -364,7 +365,7 @@ class BleManager extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void writeWithoutResponse(String deviceUUID, String serviceUUID, String characteristicUUID,
-                                     ReadableArray message, Integer maxByteSize, Integer queueSleepTime, Callback callback) {
+            ReadableArray message, Integer maxByteSize, Integer queueSleepTime, Callback callback) {
         Log.d(LOG_TAG, "Write without response to: " + deviceUUID);
         if (serviceUUID == null || characteristicUUID == null) {
             callback.invoke("ServiceUUID and characteristicUUID required.");
@@ -399,7 +400,8 @@ class BleManager extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void readDescriptor(String deviceUUID, String serviceUUID, String characteristicUUID, String descriptorUUID, Callback callback) {
+    public void readDescriptor(String deviceUUID, String serviceUUID, String characteristicUUID, String descriptorUUID,
+            Callback callback) {
         Log.d(LOG_TAG, "Read descriptor from: " + deviceUUID);
         if (serviceUUID == null || characteristicUUID == null || descriptorUUID == null) {
             callback.invoke("ServiceUUID, CharacteristicUUID and descriptorUUID required.", null);
@@ -499,7 +501,8 @@ class BleManager extends ReactContextBaseJavaModule {
                     state = "turning_off";
                     break;
                 default:
-                    // should not happen as per https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#getState()
+                    // should not happen as per
+                    // https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#getState()
                     state = "off";
                     break;
             }
@@ -544,7 +547,8 @@ class BleManager extends ReactContextBaseJavaModule {
                         stringState = "turning_on";
                         break;
                     default:
-                        // should not happen as per https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#EXTRA_STATE
+                        // should not happen as per
+                        // https://developer.android.com/reference/android/bluetooth/BluetoothAdapter#EXTRA_STATE
                         stringState = "off";
                         break;
                 }
@@ -602,7 +606,8 @@ class BleManager extends ReactContextBaseJavaModule {
                 }
             } else if (action.equals(BluetoothDevice.ACTION_PAIRING_REQUEST)) {
                 BluetoothDevice bluetoothDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (bondRequest != null && bondRequest.uuid.equals(bluetoothDevice.getAddress()) && bondRequest.pin != null) {
+                if (bondRequest != null && bondRequest.uuid.equals(bluetoothDevice.getAddress())
+                        && bondRequest.pin != null) {
                     bluetoothDevice.setPin(bondRequest.pin.getBytes());
                     bluetoothDevice.createBond();
                 }
@@ -722,6 +727,16 @@ class BleManager extends ReactContextBaseJavaModule {
         }
     }
 
+    @ReactMethod
+    public void startTransferService(String serviceUUID, String characteristicUUID, Callback callback) {
+        scanManager.startTransferService(serviceUUID, characteristicUUID, callback);
+    }
+
+    @ReactMethod
+    public void stopTransferService(Callback callback) {
+        scanManager.stopTransferService(callback);
+    }
+
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
     public static String bytesToHex(byte[] bytes) {
@@ -740,7 +755,6 @@ class BleManager extends ReactContextBaseJavaModule {
             value.pushInt((bytes[i] & 0xFF));
         return value;
     }
-
 
     private Peripheral retrieveOrCreatePeripheral(String peripheralUUID) {
         Peripheral peripheral = peripherals.get(peripheralUUID);
@@ -776,7 +790,8 @@ class BleManager extends ReactContextBaseJavaModule {
     @Override
     public void onCatalystInstanceDestroy() {
         try {
-            // Disconnect all known peripherals, otherwise android system will think we are still connected
+            // Disconnect all known peripherals, otherwise android system will think we are
+            // still connected
             // while we have lost the gatt instance
             disconnectPeripherals();
         } catch (Exception e) {
@@ -784,7 +799,8 @@ class BleManager extends ReactContextBaseJavaModule {
         }
 
         if (scanManager != null) {
-            // Stop scan in case one was started to stop events from being emitted after destroy
+            // Stop scan in case one was started to stop events from being emitted after
+            // destroy
             scanManager.stopScan(args -> {
             });
         }
