@@ -359,6 +359,10 @@ class BleManager {
     });
   }
 
+  checkScanState() {
+    bleManager.checkScanState();
+  }
+
   start(options?: StartOptions) {
     return new Promise<void>((fulfill, reject) => {
       if (options == null) {
