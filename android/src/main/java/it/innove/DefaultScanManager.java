@@ -1,6 +1,5 @@
 package it.innove;
 
-
 import static com.facebook.react.bridge.UiThreadUtil.runOnUiThread;
 
 import android.Manifest;
@@ -43,7 +42,9 @@ public class DefaultScanManager extends ScanManager {
         scanSessionId.incrementAndGet();
 
         getBluetoothAdapter().getBluetoothLeScanner().stopScan(mScanCallback);
-        callback.invoke();
+        setScanState(false);
+        if (callback != null)
+            callback.invoke();
     }
 
     @Override
@@ -87,7 +88,8 @@ public class DefaultScanManager extends ScanManager {
 
         if (serviceUUIDs.size() > 0) {
             for (int i = 0; i < serviceUUIDs.size(); i++) {
-                ScanFilter filter = new ScanFilter.Builder().setServiceUuid(new ParcelUuid(UUIDHelper.uuidFromString(serviceUUIDs.getString(i)))).build();
+                ScanFilter filter = new ScanFilter.Builder()
+                        .setServiceUuid(new ParcelUuid(UUIDHelper.uuidFromString(serviceUUIDs.getString(i)))).build();
                 filters.add(filter);
                 Log.d(BleManager.LOG_TAG, "Filter service: " + serviceUUIDs.getString(i));
             }
@@ -101,6 +103,7 @@ public class DefaultScanManager extends ScanManager {
         }
 
         getBluetoothAdapter().getBluetoothLeScanner().startScan(filters, scanSettingsBuilder.build(), mScanCallback);
+        setScanState(true);
 
         if (scanSeconds > 0) {
             Thread thread = new Thread() {
@@ -146,7 +149,8 @@ public class DefaultScanManager extends ScanManager {
 
         if (record != null) {
             info = record.getDeviceName();
-        } else if (ActivityCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
+        } else if (ActivityCompat.checkSelfPermission(context,
+                Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED) {
             info = result.getDevice().getName();
         } else {
             info = result.toString();

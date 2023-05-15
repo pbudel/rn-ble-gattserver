@@ -36,6 +36,8 @@ public abstract class ScanManager {
     protected BleManager bleManager;
     protected AtomicInteger scanSessionId = new AtomicInteger();
 
+    private Boolean isScanning = false;
+
     private final BluetoothGattServerCallback mGattServerCallback = new BluetoothGattServerCallback() {
         @Override
         public void onConnectionStateChange(BluetoothDevice device, int status, int newState) {
@@ -91,6 +93,19 @@ public abstract class ScanManager {
 
     public abstract void scan(ReadableArray serviceUUIDs, final int scanSeconds, ReadableMap options,
             Callback callback);
+
+    protected void setScanState(Boolean state) {
+        isScanning = state;
+        notifyScanState();
+    }
+
+    public void notifyScanState() {
+        WritableMap map = Arguments.createMap();
+        String stringState = isScanning ? "on" : "off";
+        map.putString("state", stringState);
+        Log.d(bleManager.LOG_TAG, "state: " + stringState);
+        bleManager.sendEvent("BleManagerDidUpdateScanState", map);
+    };
 
     protected void startTransferService(String serviceUUID, String characteristicUUID, Callback callback) {
         // TODO move mBluetoothGattServer outside this class?

@@ -277,6 +277,16 @@ BleManager.checkState().then((state) =>
 );
 ```
 
+### checkScanState()
+
+Force the module to check the scan state of BLE and trigger a BleManagerDidUpdateScanState event.
+
+**Examples**
+
+```js
+BleManager.checkScanState();
+```
+
 ### startNotification(peripheralId, serviceUUID, characteristicUUID)
 
 Start the notification on the specified characteristic, you need to call `retrieveServices` method before.
@@ -943,6 +953,24 @@ The peripheral received a request to start or stop providing notifications for a
 - `isNotifying` - `Boolean` - Is the characteristic notifying or not
 - `domain` - `String` - [iOS only] error domain
 - `code` - `Number` - [iOS only] error code
+
+###  BleManagerDidUpdateScanState
+The BLE scan change state.
+
+**Arguments**
+
+- `state` - `String` - the new BLE scan state ('on'/'off').
+
+**Examples**
+
+```js
+bleManagerEmitter.addListener(
+  'BleManagerDidUpdateScanState',
+  (args) => {
+    // The new state: args.state
+  }
+);
+```
 
 ### startTransferService(serviceUUID, characteristicUUID)
 

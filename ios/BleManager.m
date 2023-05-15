@@ -78,7 +78,7 @@ static bool hasListeners = NO;
 
 - (NSArray<NSString *> *)supportedEvents
 {
-    return @[@"BleManagerDidUpdateValueForCharacteristic", @"BleManagerStopScan", @"BleManagerDiscoverPeripheral", @"BleManagerConnectPeripheral", @"BleManagerDisconnectPeripheral", @"BleManagerDidUpdateState", @"BleManagerCentralManagerWillRestoreState", @"BleManagerDidUpdateNotificationStateFor"];
+    return @[@"BleManagerDidUpdateValueForCharacteristic", @"BleManagerStopScan", @"BleManagerDiscoverPeripheral", @"BleManagerConnectPeripheral", @"BleManagerDisconnectPeripheral", @"BleManagerDidUpdateState", @"BleManagerCentralManagerWillRestoreState", @"BleManagerDidUpdateNotificationStateFor", @"BleManagerDidReceivedData", @"BleManagerDidUpdateScanState"];
 }
 
 
@@ -316,7 +316,7 @@ RCT_EXPORT_METHOD(getConnectedPeripherals:(NSArray *)serviceUUIDStrings callback
     if ([serviceUUIDs count] == 0){
         @synchronized(peripherals) {
             for(CBPeripheral *peripheral in peripherals){
-                if([peripheral state] == CBPeripheralStateConnected){
+                if([peripheral state] == CBPeripheralStateConnected || [peripheral state] == CBPeripheralStateConnecting){
                     NSDictionary * obj = [peripheral asDictionary];
                     [foundedPeripherals addObject:obj];
                 }
@@ -371,7 +371,7 @@ RCT_EXPORT_METHOD(start:(NSDictionary *)options callback:(nonnull RCTResponseSen
         _sharedManager = manager;
     }
 
-    transfer = [[CBPeripheralManager alloc] initWithDelegate:self queue:dispatch_get_main_queue()];
+    transfer = [[CBPeripheralManager alloc] initWithDelegate:self queue:queue];
     [manager addObserver:self forKeyPath:@"isScanning" options:NSKeyValueObservingOptionNew context:nil];
     
     callback(@[]);
@@ -906,7 +906,7 @@ RCT_EXPORT_METHOD(stopTransferService:(nonnull RCTResponseSenderBlock)callback)
 
     for (CBATTRequest *rq in requests) {
     NSData* packet = rq.value;
-    [self.bridge.eventDispatcher sendAppEventWithName:@"BleManagerDidReceiveData" body:@{@"id": rq.central.identifier.UUIDString, @"data": [rq.value hexadecimalString]}];
+    [self sendEventWithName:@"BleManagerDidReceivedData" body:@{@"id": rq.central.identifier.UUIDString, @"data": [rq.value hexadecimalString]}];
     }
 }
 
@@ -1175,6 +1175,32 @@ RCT_EXPORT_METHOD(stopTransferService:(nonnull RCTResponseSenderBlock)callback)
 
 -(NSString *) keyForPeripheral: (CBPeripheral *)peripheral andCharacteristic:(CBCharacteristic *)characteristic andDescriptor:(CBDescriptor *)descriptor {
     return [NSString stringWithFormat:@"%@|%@|%@", [peripheral uuidAsString], [characteristic UUID], [descriptor UUID]];
+}
+
+RCT_EXPORT_METHOD(checkScanState)
+{
+  if (manager != nil){
+    [self centralManagerDidUpdateState:self.manager];
+  }
+}
+
+-(void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+  NSLog(@"observeValueForKeyPath");
+  if ([keyPath isEqualToString:@"isScanning"]) {
+    [self notifyScanState];
+  }
+}
+
+- (void)notifyScanState
+{
+  NSString* scanState = [manager isScanning] ? @"on" : @"off";
+  NSLog(@"Notify scan state %@", scanState);
+  [self sendEventWithName:@"BleManagerDidUpdateScanState" body:@{@"state":scanState}];
+}
+
+- (void)dealloc
+{
+  [manager removeObserver:self forKeyPath:@"isScanning"];
 }
 
 -(void)centralManager:(CBCentralManager *)central willRestoreState:(NSDictionary<NSString *,id> *)dict

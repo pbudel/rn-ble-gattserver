@@ -533,6 +533,12 @@ class BleManager extends ReactContextBaseJavaModule {
         adapter.setName(name);
     }
 
+    @ReactMethod
+    public void checkScanState() {
+        Log.d(LOG_TAG, "checkScanState");
+        scanManager.notifyScanState();
+    }
+
     @SuppressLint("MissingPermission")
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override

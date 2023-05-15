@@ -25,37 +25,38 @@ public class LegacyScanManager extends ScanManager {
         scanSessionId.incrementAndGet();
 
         getBluetoothAdapter().stopLeScan(mLeScanCallback);
-        callback.invoke();
+        setScanState(false);
+        if (callback != null)
+            callback.invoke();
     }
 
-    private BluetoothAdapter.LeScanCallback mLeScanCallback =
-            new BluetoothAdapter.LeScanCallback() {
+    private BluetoothAdapter.LeScanCallback mLeScanCallback = new BluetoothAdapter.LeScanCallback() {
 
+        @Override
+        public void onLeScan(final BluetoothDevice device, final int rssi,
+                final byte[] scanRecord) {
+            runOnUiThread(new Runnable() {
                 @Override
-                public void onLeScan(final BluetoothDevice device, final int rssi,
-                                     final byte[] scanRecord) {
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.i(BleManager.LOG_TAG, "DiscoverPeripheral: " + device.getName());
+                public void run() {
+                    Log.i(bleManager.LOG_TAG, "DiscoverPeripheral: " + result.getDevice().getName() + " - "
+                            + result.getScanRecord().toString());
 
-                            Peripheral peripheral = bleManager.getPeripheral(device);
-                            if (peripheral == null) {
-                                peripheral = new Peripheral(device, rssi, scanRecord, bleManager.getReactContext());
-                            } else {
-                                peripheral.updateData(scanRecord);
-                                peripheral.updateRssi(rssi);
-                            }
-                            bleManager.savePeripheral(peripheral);
+                    Peripheral peripheral = bleManager.getPeripheral(device);
+                    if (peripheral == null) {
+                        peripheral = new Peripheral(device, rssi, scanRecord, bleManager.getReactContext());
+                    } else {
+                        peripheral.updateData(scanRecord);
+                        peripheral.updateRssi(rssi);
+                    }
+                    bleManager.savePeripheral(peripheral);
 
-                            WritableMap map = peripheral.asWritableMap();
-                            bleManager.sendEvent("BleManagerDiscoverPeripheral", map);
-                        }
-                    });
+                    WritableMap map = peripheral.asWritableMap();
+                    bleManager.sendEvent("BleManagerDiscoverPeripheral", map);
                 }
+            });
+        }
 
-
-            };
+    };
 
     @Override
     public void scan(ReadableArray serviceUUIDs, final int scanSeconds, ReadableMap options, Callback callback) {
@@ -63,6 +64,7 @@ public class LegacyScanManager extends ScanManager {
             Log.d(BleManager.LOG_TAG, "Filter is not working in pre-lollipop devices");
         }
         getBluetoothAdapter().startLeScan(mLeScanCallback);
+        setScanState(false);
 
         if (scanSeconds > 0) {
             Thread thread = new Thread() {
@@ -84,10 +86,12 @@ public class LegacyScanManager extends ScanManager {
                             if (scanSessionId.intValue() == currentScanSession) {
                                 if (btAdapter.getState() == BluetoothAdapter.STATE_ON) {
                                     btAdapter.stopLeScan(mLeScanCallback);
+                                    setScanState(false);
                                 }
                                 WritableMap map = Arguments.createMap();
                                 map.putInt("status", 0);
                                 bleManager.sendEvent("BleManagerStopScan", map);
+                                setScanState(false);
                             }
                         }
                     });
@@ -98,5 +102,9 @@ public class LegacyScanManager extends ScanManager {
             thread.start();
         }
         callback.invoke();
+    }
+
+    public boolean isScanning() {
+        return true;
     }
 }
