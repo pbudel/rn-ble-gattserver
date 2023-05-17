@@ -68,7 +68,8 @@ public class LollipopPeripheral extends Peripheral {
                 if (advertisingData.getServiceData() != null) {
                     for (Map.Entry<ParcelUuid, byte[]> entry : advertisingData.getServiceData().entrySet()) {
                         if (entry.getValue() != null) {
-                            serviceData.putMap(UUIDHelper.uuidToString((entry.getKey()).getUuid()), byteArrayToWritableMap(entry.getValue()));
+                            serviceData.putMap(UUIDHelper.uuidToString((entry.getKey()).getUuid()),
+                                    byteArrayToWritableMap(entry.getValue()));
                         }
                     }
                 }

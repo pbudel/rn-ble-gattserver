@@ -512,7 +512,8 @@ class BleManager extends ReactContextBaseJavaModule {
         map.putString("state", state);
         Log.d(LOG_TAG, "state:" + state);
         sendEvent("BleManagerDidUpdateState", map);
-        callback.invoke(state);
+        if (callback != null)
+            callback.invoke(state);
     }
 
     @ReactMethod

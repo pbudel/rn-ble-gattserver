@@ -38,9 +38,6 @@ public class LegacyScanManager extends ScanManager {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    Log.i(bleManager.LOG_TAG, "DiscoverPeripheral: " + result.getDevice().getName() + " - "
-                            + result.getScanRecord().toString());
-
                     Peripheral peripheral = bleManager.getPeripheral(device);
                     if (peripheral == null) {
                         peripheral = new Peripheral(device, rssi, scanRecord, bleManager.getReactContext());
