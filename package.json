@@ -1,13 +1,13 @@
 {
   "name": "react-native-ble-manager",
-  "version": "10.0.2",
+  "version": "10.0.3",
   "description": "A BLE module for react native.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/innoveit/react-native-ble-manager.git"
+    "url": "https://github.com/emersonsoftware/emersonconnected-rnble.git"
   },
   "bugs": {
-    "url": "https://github.com/innoveit/react-native-ble-manager/issues"
+    "url": "https://github.com/emersonsoftware/emersonconnected-rnble.git"
   },
   "keywords": [
     "react-native",
