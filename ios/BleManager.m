@@ -1222,6 +1222,7 @@ RCT_EXPORT_METHOD(checkScanState)
             NSMutableArray *data = [NSMutableArray new];
             for (CBPeripheral *peripheral in peripherals) {
                 [data addObject:[peripheral asDictionary]];
+		peripheral.delegate = self;
             }
 
             [self sendEventWithName:@"BleManagerCentralManagerWillRestoreState" body:@{@"peripherals": data}];
